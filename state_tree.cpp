@@ -1,26 +1,17 @@
 #include "state_tree.hpp"
 
-const char* to_string(State state) {
-    switch (state) {
-        case State::MAIN_MENU: return "MAIN_MENU";
-        case State::SETTINGS_MENU: return "SETTINGS_MENU";
-        case State::GRAPHICS: return "GRAPHICS";
-        case State::INPUT: return "INPUT";
-        default: return "UNKNOWN";
-    }
-}
 
-StateTree::StateTree(std::initializer_list<std::pair<const State, StateTree>> init) {
+StateTree::StateTree(std::initializer_list<std::pair<const TreeState, StateTree>> init) {
     for (const auto& pair : init) {
         states_[pair.first] = std::make_shared<StateTree>(pair.second);
     }
 }
 
-void StateTree::register_state(State state, std::shared_ptr<StateTree> substate) {
+void StateTree::register_state(TreeState state, std::shared_ptr<StateTree> substate) {
     states_[state] = substate;
 }
 
-bool StateTree::is_state_active(std::initializer_list<State> query_states) {
+bool StateTree::is_state_active(std::initializer_list<TreeState> query_states) {
     for (const auto& state : query_states) {
         if (!is_substate_active(state)) {
             return false;
@@ -29,7 +20,7 @@ bool StateTree::is_state_active(std::initializer_list<State> query_states) {
     return true;
 }
 
-void StateTree::set_active(const std::vector<State>& path, bool active) {
+void StateTree::set_active(const std::vector<TreeState>& path, bool active) {
     if (path.empty()) {
         return;
     }
@@ -50,12 +41,12 @@ void StateTree::print_states(int indent_level, bool is_last) const {
     }
 }
 
-void StateTree::set_active_recursive(const std::vector<State>& path, size_t index, bool active) {
+void StateTree::set_active_recursive(const std::vector<TreeState>& path, size_t index, bool active) {
     if (index >= path.size()) {
         return;
     }
 
-    State current_state = path[index];
+    TreeState current_state = path[index];
 
     if (states_.find(current_state) != states_.end()) {
         states_[current_state]->is_active_ = active;
@@ -66,7 +57,7 @@ void StateTree::set_active_recursive(const std::vector<State>& path, size_t inde
     }
 }
 
-bool StateTree::is_substate_active(State state) {
+bool StateTree::is_substate_active(TreeState state) {
     if (states_.find(state) != states_.end() && states_[state]->is_active_) {
         return true;
     }
